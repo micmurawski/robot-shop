@@ -23,7 +23,7 @@ public class Controller {
 
     private String CART_URL = String.format("http://%s/shipping/", getenv("CART_ENDPOINT", "cart"));
 
-    public static List bytesGlobal = Collections.synchronizedList(new ArrayList<byte[]>());
+    public static List<byte[]> bytesGlobal = Collections.synchronizedList(new ArrayList<byte[]>());
 
     @Autowired
     private CityRepository cityrepo;

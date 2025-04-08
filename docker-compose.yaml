@@ -87,6 +87,8 @@ services:
       - mysql
     networks:
       - robot-shop
+    environment:
+      DB_HOST: mysql
     healthcheck:
       test: ["CMD", "curl", "-H", "X-INSTANA-SYNTHETIC: 1", "-f", "http://localhost:8080/health"]
       interval: 10s
@@ -125,8 +127,8 @@ services:
       timeout: 10s
       retries: 3
     # Uncomment to change payment gateway
-    #environment:
-      #PAYMENT_GATEWAY: "https://www.worldpay.com"
+    environment:
+      PAYMENT_GATEWAY: "https://www.worldpay.com"
     logging:
       <<: *logging
   dispatch:
@@ -142,9 +144,9 @@ services:
   web:
     build:
       context: web
-      args:
+      #args:
         # agent key to download tracing libs
-        KEY: ${INSTANA_AGENT_KEY}
+        #KEY: ${INSTANA_AGENT_KEY}
     image: ${REPO}/rs-web:${TAG}
     depends_on:
       - catalogue

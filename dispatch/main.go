@@ -9,11 +9,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/instana/go-sensor"
+	//"github.com/instana/go-sensor"
 	ot "github.com/opentracing/opentracing-go"
 	"github.com/opentracing/opentracing-go/ext"
 	otlog "github.com/opentracing/opentracing-go/log"
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 const (
@@ -168,11 +168,11 @@ func main() {
 	rand.Seed(time.Now().Unix())
 
 	// Instana tracing
-	ot.InitGlobalTracer(instana.NewTracerWithOptions(&instana.Options{
-		Service:           Service,
-		LogLevel:          instana.Info,
-		EnableAutoProfile: true,
-	}))
+	//ot.InitGlobalTracer(instana.NewTracerWithOptions(&instana.Options{
+	//	Service:           Service,
+	//	LogLevel:          instana.Info,
+	//	EnableAutoProfile: true,
+	//}))
 
 	// Init amqpUri
 	// get host from environment

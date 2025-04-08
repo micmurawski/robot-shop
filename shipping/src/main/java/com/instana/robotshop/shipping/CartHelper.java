@@ -7,14 +7,11 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
+import org.apache.hc.client5.http.classic.methods.HttpPost;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.http.io.entity.StringEntity;
 
 public class CartHelper {
     private static final Logger logger = LoggerFactory.getLogger(CartHelper.class);
@@ -30,46 +27,32 @@ public class CartHelper {
         logger.info("add shipping to cart {}", id);
         StringBuilder buffer = new StringBuilder();
 
-        CloseableHttpClient httpClient = null;
-        try {
-            // set timeout to 5 secs
-            HttpParams httpParams = new BasicHttpParams();
-            HttpConnectionParams.setConnectionTimeout(httpParams, 5000);
-
-            httpClient = HttpClients.createDefault();
+        try (CloseableHttpClient httpClient = HttpClients.custom()
+                .setDefaultRequestConfig(org.apache.hc.client5.http.config.RequestConfig.custom()
+                    .setConnectTimeout(5, java.util.concurrent.TimeUnit.SECONDS)
+                    .build())
+                .build()) {
+            
             HttpPost postRequest = new HttpPost(baseUrl + id);
-            StringEntity payload = new StringEntity(data);
-            payload.setContentType("application/json");
+            StringEntity payload = new StringEntity(data, org.apache.hc.core5.http.ContentType.APPLICATION_JSON);
             postRequest.setEntity(payload);
-            CloseableHttpResponse res = httpClient.execute(postRequest);
-
-            if (res.getStatusLine().getStatusCode() == 200) {
-                BufferedReader in = new BufferedReader(new InputStreamReader(res.getEntity().getContent()));
-                String line;
-                while ((line = in.readLine()) != null) {
-                    buffer.append(line);
+            
+            try (CloseableHttpResponse res = httpClient.execute(postRequest)) {
+                if (res.getCode() == 200) {
+                    try (BufferedReader in = new BufferedReader(new InputStreamReader(res.getEntity().getContent()))) {
+                        String line;
+                        while ((line = in.readLine()) != null) {
+                            buffer.append(line);
+                        }
+                    }
+                } else {
+                    logger.warn("Failed with code {}", res.getCode());
                 }
-            } else {
-                logger.warn("Failed with code {}", res.getStatusLine().getStatusCode());
-            }
-            try {
-                res.close();
-            } catch(IOException e) {
-                logger.warn("httpresponse", e);
             }
         } catch(Exception e) {
             logger.warn("http client exception", e);
-        } finally {
-            if (httpClient != null) {
-                try {
-                    httpClient.close();
-                } catch(IOException e) {
-                    logger.warn("httpclient", e);
-                }
-            }
         }
 
-        // this will be empty on error
         return buffer.toString();
     }
 }

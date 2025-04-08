@@ -1,9 +1,7 @@
 #
 # Build
 #
-FROM debian:10 AS build
-
-RUN apt-get update && apt-get -y install maven
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 
 WORKDIR /opt/shipping
 
@@ -15,7 +13,7 @@ RUN mvn package
 #
 # Run
 #
-FROM openjdk:8-jdk
+FROM eclipse-temurin:17-jre-jammy
 
 EXPOSE 8080
 

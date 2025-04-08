@@ -1,10 +1,11 @@
-FROM golang:1.17
+FROM golang:1.21
 
 WORKDIR /go/src/app
 
+COPY go.mod .
 COPY *.go .
 
-RUN go mod init dispatch && go get
+RUN go mod download && go mod tidy
 RUN go install
 
-CMD dispatch
+CMD ["dispatch"]

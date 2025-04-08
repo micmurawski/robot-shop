@@ -1,0 +1,17 @@
+CREATE DATABASE IF NOT EXISTS shipping
+DEFAULT CHARACTER SET 'utf8';
+
+USE shipping;
+
+CREATE TABLE IF NOT EXISTS shipping (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id VARCHAR(50) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- Create user and grant privileges using modern MySQL syntax
+CREATE USER IF NOT EXISTS 'shipping'@'%' IDENTIFIED BY 'iloveit';
+GRANT ALL PRIVILEGES ON shipping.* TO 'shipping'@'%';
+FLUSH PRIVILEGES; 
