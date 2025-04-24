@@ -67,7 +67,7 @@ public class ShippingServiceApplication implements WebMvcConfigurer {
     private static class InstanaDatacenterTagInterceptor implements HandlerInterceptor {
         @Override
         public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-            SpanSupport.annotate("datacenter", DATA_CENTERS[new Random().nextInt(DATA_CENTERS.length)]);
+            SpanSupport.annotate("datacenter", DATA_CENTERS[new Random(System.currentTimeMillis()).nextInt(DATA_CENTERS.length)]);
             return true;
         }
     }
