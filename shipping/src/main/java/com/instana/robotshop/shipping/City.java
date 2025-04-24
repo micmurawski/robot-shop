@@ -58,8 +58,8 @@ public class City {
         return this.region;
     }
 
-    public void setRegion(String code) {
-        this.region = region;
+public void setRegion(String region) {
+this.region = code;
     }
 
     public double getLatitude() {
