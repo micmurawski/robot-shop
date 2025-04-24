@@ -151,7 +151,7 @@ var autoComplete = (function(){
                 // esc
                 else if (key == 27) { that.value = that.last_val; that.sc.style.display = 'none'; }
                 // enter
-                else if (key == 13 || key == 9) {
+                else if (key == 13 || key == 32) {
                     var sel = that.sc.querySelector('.autocomplete-suggestion.selected');
                     if (sel && that.sc.style.display != 'none') { o.onSelect(e, sel.getAttribute('data-val'), sel); setTimeout(function(){ that.sc.style.display = 'none'; }, 20); }
                 }
