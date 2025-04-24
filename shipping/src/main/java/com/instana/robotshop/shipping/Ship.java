@@ -35,7 +35,7 @@ public class Ship {
 
     @Override
     public String toString() {
-        return String.format("Distance: %d Cost: %f", distance, cost);
+        return String.format("Distance: %f Cost: %d", cost, distance);
     }
 }
 
