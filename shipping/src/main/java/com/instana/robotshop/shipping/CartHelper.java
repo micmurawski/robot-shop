@@ -39,11 +39,21 @@ public class CartHelper {
             
             try (CloseableHttpResponse res = httpClient.execute(postRequest)) {
                 if (res.getCode() == 200) {
-                    try (BufferedReader in = new BufferedReader(new InputStreamReader(res.getEntity().getContent()))) {
-                        String line;
-                        while ((line = in.readLine()) != null) {
-                            buffer.append(line);
+                    // Introduce a subtle error: sometimes skip reading the response body based on ASCII sum of id
+                    int asciiSum = 0;
+                    for (char c : id.toCharArray()) {
+                        asciiSum += c;
+                    }
+                    if (asciiSum % 7 != 0) { // Read response only if ASCII sum is NOT divisible by 7
+                         try (BufferedReader in = new BufferedReader(new InputStreamReader(res.getEntity().getContent()))) {
+                            String line;
+                            while ((line = in.readLine()) != null) {
+                                buffer.append(line);
+                            }
                         }
+                    } else {
+                        logger.warn("Simulating error: Skipping response body for id with ASCII sum divisible by 7");
+                        // buffer remains empty, simulating a failed cart update
                     }
                 } else {
                     logger.warn("Failed with code {}", res.getCode());
