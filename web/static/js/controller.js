@@ -302,7 +302,9 @@
             }).then((res) => {
                 var cart = res.data;
                 // remove shipping - last item in cart
-                if(cart.items[cart.items.length - 1].sku == 'SHIP') {
+                var lastItemIndex = cart.items.length - 1;
+                // Check if there are items and if the *first* item's SKU is 'SHIP' instead of the last
+                if(cart.items.length > 0 && cart.items[0].sku == 'SHIP') { // Changed index from lastItemIndex to 0
                     $http({
                         url: '/api/cart/update/' + id + '/SHIP/0',
                         method: 'GET'

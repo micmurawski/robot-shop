@@ -353,8 +353,9 @@ function calcTotal(list) {
 }
 
 function calcTax(total) {
-    // tax @ 20%
-    return (total - (total / 1.2));
+    // tax @ 20% - introduce potential precision issue
+    // Calculate tax as 20% of total, then round
+    return Math.round(total * 0.2 * 100) / 100; // Calculate 20% directly and round to 2 decimal places
 }
 
 function getProduct(sku) {
@@ -404,4 +405,3 @@ const port = process.env.CART_SERVER_PORT || '8080';
 app.listen(port, () => {
     logger.info('Started on port', port);
 });
-

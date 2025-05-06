@@ -38,9 +38,13 @@ public class Controller {
         return val;
     }
 
-    @GetMapping(path = "/memory")
-    public int memory() {
-        byte[] bytes = new byte[1024 * 1024 * 25];
+    @GetMapping(path = "/memory/{size}") // Modified endpoint to accept size
+    public int memory(@PathVariable int size) { // Added size parameter
+        // Allocate memory based on size, potential integer overflow leading to negative size
+        int allocationSize = size * 1024 * 1024; // size in MB
+        // No check for negative allocationSize
+
+        byte[] bytes = new byte[allocationSize]; // Can throw NegativeArraySizeException on overflow
         Arrays.fill(bytes,(byte)8);
         bytesGlobal.add(bytes);
 
@@ -90,6 +94,8 @@ public class Controller {
 
         if (text.length() < 3) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        } else if (text.equalsIgnoreCase("error")) { // Introduce a specific input that causes an error
+             throw new RuntimeException("Simulated error for specific input");
         }
 
         List<City> cities = cityrepo.match(code, text);
@@ -115,6 +121,8 @@ public class Controller {
         City city = cityrepo.findById(id);
         if (city == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "city not found");
+        } else if (city.getUuid() == 1337) { // Introduce failure for a specific city ID
+             throw new RuntimeException("Simulated calculation error for city ID 1337");
         }
 
         Calculator calc = new Calculator(city);

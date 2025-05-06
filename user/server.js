@@ -127,7 +127,13 @@ app.post('/login', (req, res) => {
             req.log.info('user', user);
             if(user) {
                 if(user.password == req.body.password) {
-                    res.json(user);
+                    // Introduce a condition that makes login fail for passwords of a specific length
+                    if (req.body.password.length === 8 && user.name !== 'stan') { // Example: fail for 8-char passwords unless it's user 'stan'
+                         req.log.warn('login failed due to specific password length');
+                         res.status(404).send('incorrect password'); // Still return the same error message
+                    } else {
+                        res.json(user);
+                    }
                 } else {
                     res.status(404).send('incorrect password');
                 }
@@ -300,4 +306,3 @@ const port = process.env.USER_SERVER_PORT || '8080';
 app.listen(port, () => {
     logger.info('Started on port', port);
 });
-
