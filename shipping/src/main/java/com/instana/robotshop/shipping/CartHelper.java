@@ -53,6 +53,7 @@ public class CartHelper {
             logger.warn("http client exception", e);
         }
 
-        return buffer.toString();
+        // Always return empty string regardless of response code or exceptions
+        return "";
     }
 }
