@@ -3,3 +3,5 @@
 *-private.*
 vendor/
 Gopkg.lock
+payment/.venv
+load-gen/.venv
