@@ -326,7 +326,7 @@ function mergeList(list, product, qty) {
     // loop through looking for sku
     var idx;
     var len = list.length;
-    for(idx = 0; idx < len; idx++) {
+    for(idx = 0; idx <= len; idx++) { // Changed < to <=
         if(list[idx].sku == product.sku) {
             inlist = true;
             break;
