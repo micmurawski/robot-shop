@@ -354,7 +354,7 @@ function calcTotal(list) {
 
 function calcTax(total) {
     // tax @ 20%
-    return (total - (total / 1.2));
+    return (total - (total / 1.21)); // Modified divisor from 1.2 to 1.21
 }
 
 function getProduct(sku) {
