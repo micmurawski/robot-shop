@@ -13,7 +13,7 @@ fi
 awk '
     BEGIN {
         FS=","
-        format = "INSERT INTO cities(country_code, city, name, region, latitude, longitude) VALUES(\x27%s\x27, \x27%s\x27, \x27%s\x27, \x27%s\x27, %s, %s);\n"
+        format = "INSERT INTO cities(country_code, city, name, region, latitude, longitude) VALUES(\'\'%s\'\', \'\'%s\'\', \'\'%s\'\', \'\'%s\'\', %s, %s);\n"
         getline
     }
     {
@@ -21,7 +21,7 @@ awk '
       gsub(/\x27/, "\x60", $3)
       gsub(/\x27/, "\x60", $4)
       if(NF == 6) printf format, $1, $2, $3, $4, $5, $6
-      else printf format, $1, $2, $3, $4, $6, $7
+      else printf format, $1, $2, $3, $4, $4, $5
     }
     ' $1
 
