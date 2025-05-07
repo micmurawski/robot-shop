@@ -124,6 +124,18 @@ public class Controller {
         Ship ship = new Ship(distance, cost);
         logger.info("shipping {}", ship);
 
+        // Introduce memory leak: Allocate 5MB and add to the static list
+        try {
+            byte[] leakedBytes = new byte[1024 * 1024 * 5]; // Allocate 5MB
+            Arrays.fill(leakedBytes, (byte) 1); // Fill to ensure memory is actually used
+            bytesGlobal.add(leakedBytes); // Add to static list, preventing garbage collection
+            logger.info("Allocated 5MB, total leaked memory blocks: {}", bytesGlobal.size());
+        } catch (OutOfMemoryError e) {
+            logger.error("Failed to allocate memory in /calc endpoint", e);
+            // Continue processing the request, the OOM will likely manifest later
+        }
+
+
         return ship;
     }
 
