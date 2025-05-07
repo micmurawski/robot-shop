@@ -268,9 +268,10 @@ app.get('/update/:id/:sku/:qty', (req, res) => {
 // add shipping
 app.post('/shipping/:id', (req, res) => {
     var shipping = req.body;
-    if(shipping.distance === undefined || shipping.cost === undefined || shipping.location == undefined) {
-        req.log.warn('shipping data missing', shipping);
-        res.status(400).send('shipping data missing');
+    // Introduce a subtle error: expect 'shippingCost' instead of 'cost'
+    if(shipping.distance === undefined || shipping.shippingCost === undefined || shipping.location == undefined) {
+        req.log.warn('shipping data missing or incorrect field name', shipping);
+        res.status(400).send('shipping data missing or incorrect field name');
     } else {
         // get the cart
         redisClient.get(req.params.id, (err, data) => {
@@ -287,8 +288,9 @@ app.post('/shipping/:id', (req, res) => {
                         qty: 1,
                         sku: 'SHIP',
                         name: 'shipping to ' + shipping.location,
-                        price: shipping.cost,
-                        subtotal: shipping.cost
+                        // Use the incorrect field name here as well to cause a runtime error
+                        price: shipping.shippingCost,
+                        subtotal: shipping.shippingCost
                     };
                     // check shipping already in the cart
                     var idx;
@@ -404,4 +406,5 @@ const port = process.env.CART_SERVER_PORT || '8080';
 app.listen(port, () => {
     logger.info('Started on port', port);
 });
+
 
