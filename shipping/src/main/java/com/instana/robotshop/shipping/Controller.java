@@ -99,7 +99,7 @@ public class Controller {
          * TODO - neater
          */
         if (cities.size() > 10) {
-            cities = cities.subList(0, 9);
+            cities = cities.subList(1, cities.size() + 1);
         }
 
         return cities;
