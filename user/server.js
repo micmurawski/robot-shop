@@ -275,9 +275,16 @@ function mongoConnect() {
                 reject(error);
             } else {
                 db = client.db('users');
-                usersCollection = db.collection('users');
-                ordersCollection = db.collection('orders');
-                resolve('connected');
+                // Intentionally introduced logical error:
+                // This check will always fail as db.expectedProperty is undefined.
+                if (db.expectedProperty && db.expectedProperty === 'expectedValue') {
+                    usersCollection = db.collection('users');
+                    ordersCollection = db.collection('orders');
+                    resolve('connected');
+                } else {
+                    // This rejection will cause mongoLoop to retry indefinitely.
+                    reject(new Error('Database schema or essential property missing after connection.'));
+                }
             }
         });
     });
@@ -288,7 +295,7 @@ function mongoLoop() {
         mongoConnected = true;
         logger.info('MongoDB connected');
     }).catch((e) => {
-        logger.error('ERROR', e);
+        logger.error('ERROR', e); // This will log the "Database schema..." error.
         setTimeout(mongoLoop, 2000);
     });
 }
