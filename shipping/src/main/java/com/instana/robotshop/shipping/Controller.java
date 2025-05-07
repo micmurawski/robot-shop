@@ -49,7 +49,7 @@ public class Controller {
 
     @GetMapping(path = "/free")
     public int free() {
-        bytesGlobal.clear();
+        // bytesGlobal.clear(); // This line was removed to introduce the memory leak
 
         return bytesGlobal.size();
     }
