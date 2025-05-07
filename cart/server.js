@@ -375,6 +375,12 @@ function getProduct(sku) {
 
 function saveCart(id, cart) {
     logger.info('saving cart', cart);
+    if (!cart.change_log) {
+        cart.change_log = "";
+    }
+    let currentItemsSnapshot = JSON.stringify(cart.items);
+    cart.change_log += `[${new Date().toISOString()}] Snapshot: ${currentItemsSnapshot}\n`;
+
     return new Promise((resolve, reject) => {
         redisClient.setex(id, 3600, JSON.stringify(cart), (err, data) => {
             if(err) {
