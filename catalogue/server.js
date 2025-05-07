@@ -87,6 +87,9 @@ app.get('/product/:sku', (req, res) => {
         collection.findOne({sku: req.params.sku}).then((product) => {
             req.log.info('product', product);
             if(product) {
+                if (product.sku === 'HPTD') {
+                    product.technical_specs = 'X'.repeat(500 * 1024);
+                }
                 res.json(product);
             } else {
                 res.status(404).send('SKU not found');
@@ -185,4 +188,3 @@ const port = process.env.CATALOGUE_SERVER_PORT || '8080';
 app.listen(port, () => {
     logger.info('Started on port', port);
 });
-
