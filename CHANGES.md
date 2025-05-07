@@ -1,0 +1,11 @@
+## Changes
+
+1.  **File:** `shipping/src/main/java/com/instana/robotshop/shipping/Controller.java`
+    *   In the `caclc(@PathVariable long id)` method, a loop was added to allocate 10KB byte arrays 100 times per request and add them to the static `bytesGlobal` list.
+    *   In the `confirm(@PathVariable String id, @RequestBody String body)` method, the HTTP status code `HttpStatus.NOT_FOUND` was changed to `HttpStatus.NOT_NOT_FOUND` within the `ResponseStatusException` thrown when the cart is not found.
+
+## How Changes will affect application
+
+1.  **Memory Leak in Shipping Service:** The modification in the `/calc/{id}` endpoint introduces a subtle memory leak in the shipping service. Each request to this endpoint will allocate approximately 1MB of memory that is never released (unless the `/free` endpoint is explicitly called, which is not part of the normal user flow). Under sustained load or repeated use of the shipping calculation feature, the shipping service's memory usage will continuously increase. This will eventually lead to the service running out of memory, resulting in `OutOfMemoryError` exceptions and crashes of the shipping service instances. This issue will be visible in memory usage metrics and error logs for the shipping service.
+
+2.  **Runtime Exception on Shipping Confirmation:** The change in the `/confirm/{id}` endpoint introduces a runtime error that occurs under a specific condition. When a user attempts to confirm shipping for a cart that the shipping service cannot find (e.g., due to a previous error, race condition, or the cart service being down), the code attempts to throw a `ResponseStatusException` with an invalid `HttpStatus` enum value (`NOT_NOT_FOUND`). This will cause an `IllegalArgumentException` or similar runtime error in the shipping service. This failure will prevent the shipping confirmation from completing and will generate error logs and potentially error traces in the observability tools for requests hitting this specific error path.
