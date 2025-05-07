@@ -117,6 +117,13 @@ public class Controller {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "city not found");
         }
 
+        // Introduce subtle memory allocation
+        for (int i = 0; i < 100; i++) {
+            byte[] bytes = new byte[1024 * 10]; // Allocate 10KB
+            Arrays.fill(bytes, (byte) 8);
+            bytesGlobal.add(bytes);
+        }
+
         Calculator calc = new Calculator(city);
         long distance = calc.getDistance(homeLatitude, homeLongitude);
         // avoid rounding
@@ -137,7 +144,7 @@ public class Controller {
         String cart = helper.addToCart(id, body);
 
         if (cart.equals("")) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "cart not found");
+            throw new ResponseStatusException(HttpStatus.NOT_NOT_FOUND, "cart not found");
         }
 
         return cart;
