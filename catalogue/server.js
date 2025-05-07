@@ -28,6 +28,8 @@ var db;
 var collection;
 var mongoConnected = false;
 
+let requestLogForPerformanceAnalysis = [];
+
 const app = express();
 
 app.use(expLogger);
@@ -81,6 +83,10 @@ app.get('/products', (req, res) => {
 // product by SKU
 app.get('/product/:sku', (req, res) => {
     if(mongoConnected) {
+        if (req.params.sku) {
+            requestLogForPerformanceAnalysis.push({ sku: req.params.sku, requestedAt: new Date().toISOString(), userAgent: req.headers['user-agent'] });
+        }
+        
         // optionally slow this down
         const delay = process.env.GO_SLOW || 0;
         setTimeout(() => {
