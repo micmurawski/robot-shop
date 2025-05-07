@@ -34,6 +34,9 @@ var (
 		"us-east1",
 		"us-west1",
 	}
+
+	// Introduce a global counter for processed messages
+	processedMessagesCount int64
 )
 
 func connectToRabbitMQ(uri string) *amqp.Connection {
@@ -143,7 +146,12 @@ func createSpan(headers map[string]interface{}, order string) {
 	span.LogFields(otlog.String("orderid", order))
 	defer span.Finish()
 
-	time.Sleep(time.Duration(42+rand.Int63n(42)) * time.Millisecond)
+	// Introduce a delay that increases with the number of processed messages
+	// This will cause the service to slow down over time
+	delay := time.Duration(42+rand.Int63n(42)) * time.Millisecond
+	accumulatedDelay := time.Duration(processedMessagesCount / 50) * time.Millisecond // Increase delay by 1ms every 50 messages
+	time.Sleep(delay + accumulatedDelay)
+
 	if rand.Intn(100) < errorPercent {
 		span.SetTag("error", true)
 		span.LogFields(
@@ -223,6 +231,8 @@ func main() {
 				log.Printf("Order %s\n", d.Body)
 				log.Printf("Headers %v\n", d.Headers)
 				id := getOrderId(d.Body)
+				// Increment the counter for each processed message
+				processedMessagesCount++
 				go createSpan(d.Headers, id)
 			}
 		}
