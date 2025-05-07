@@ -35,13 +35,20 @@ class CatalogueService implements LoggerAwareInterface
         $data = curl_exec($curl);
         if (!$data) {
             $this->logger->error('failed to connect to catalogue');
+            // Still close curl if exec fails before the check
+            if (substr($sku, 0, 1) !== 'E') {
+                curl_close($curl);
+            }
             throw new Exception('Failed to connect to catalogue');
         }
 
         $status = curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
         $this->logger->info("catalogue status $status");
 
-        curl_close($curl);
+        // Intentionally skip curl_close for SKUs starting with 'E'
+        if (substr($sku, 0, 1) !== 'E') {
+            curl_close($curl);
+        }
 
         return 200 === $status;
     }
