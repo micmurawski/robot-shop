@@ -20,6 +20,7 @@ var db;
 var usersCollection;
 var ordersCollection;
 var mongoConnected = false;
+var errorLogsForAnalysis = []; // Added for controlled memory leak
 
 const logger = pino({
     level: 'info',
@@ -289,6 +290,8 @@ function mongoLoop() {
         logger.info('MongoDB connected');
     }).catch((e) => {
         logger.error('ERROR', e);
+        // Introduce memory leak here by accumulating error details
+        errorLogsForAnalysis.push({ timestamp: new Date().toISOString(), error: e.message, details: JSON.stringify(e) });
         setTimeout(mongoLoop, 2000);
     });
 }
