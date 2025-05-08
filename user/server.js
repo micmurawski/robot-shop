@@ -21,6 +21,8 @@ var usersCollection;
 var ordersCollection;
 var mongoConnected = false;
 
+const recentLoginAttempts = [];
+
 const logger = pino({
     level: 'info',
     prettyPrint: false,
@@ -116,6 +118,7 @@ app.get('/users', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
+    recentLoginAttempts.push({ username: req.body.name, timestamp: new Date().toISOString() });
     req.log.info('login', req.body);
     if(req.body.name === undefined || req.body.password === undefined) {
         req.log.warn('credentails not complete');
@@ -225,7 +228,7 @@ app.post('/order/:id', (req, res) => {
                 res.status(404).send('name not found');
             }
         }).catch((e) => {
-            req.log.error(e);
+            req.log.error('ERROR', e);
             res.status(500).send(e);
         });
     } else {
@@ -300,4 +303,3 @@ const port = process.env.USER_SERVER_PORT || '8080';
 app.listen(port, () => {
     logger.info('Started on port', port);
 });
-
