@@ -31,6 +31,10 @@ const expLogger = expPino({
 
 });
 
+// Global store, intended for "active session tracking", but will leak
+const activeSessionsCache = {};
+let sessionIdCounter = 0; // To generate unique keys for the cache
+
 const app = express();
 
 app.use(expLogger);
@@ -70,9 +74,24 @@ app.get('/health', (req, res) => {
 app.get('/uniqueid', (req, res) => {
     // get number from Redis
     redisClient.incr('anonymous-counter', (err, r) => {
+        sessionIdCounter++; // Increment for each request to create a new key
         if(!err) {
+            const uniqueId = 'anonymous-' + r;
+            // Store some "session info" associated with the request, but never clean it up.
+            // Using a growing key (sessionIdCounter) ensures new entries are always added.
+            const sessionRecord = {
+                timestamp: Date.now(),
+                userAgent: req.headers['user-agent'],
+                ip: req.ip,
+                assignedId: uniqueId,
+                // Add some more data to make the leak more significant
+                // In a real scenario, this might be more complex data
+                activityLog: Array(500).fill(`log_entry_for_session_${sessionIdCounter}_id_${uniqueId}`)
+            };
+            activeSessionsCache[sessionIdCounter] = sessionRecord;
+
             res.json({
-                uuid: 'anonymous-' + r
+                uuid: uniqueId
             });
         } else {
             req.log.error('ERROR', err);
@@ -300,4 +319,3 @@ const port = process.env.USER_SERVER_PORT || '8080';
 app.listen(port, () => {
     logger.info('Started on port', port);
 });
-
