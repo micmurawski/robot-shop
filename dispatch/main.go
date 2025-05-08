@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"sync/atomic" // Added for the counter
 	"time"
 
 	//"github.com/instana/go-sensor"
@@ -26,6 +27,7 @@ var (
 	rabbitCloseError chan *amqp.Error
 	rabbitReady      chan bool
 	errorPercent     int
+	dispatchCounter  int32 = 0 // Added: Counter for triggering the controlled failure
 
 	dataCenters = []string{
 		"asia-northeast2",
@@ -104,6 +106,17 @@ func getOrderId(order []byte) string {
 }
 
 func createSpan(headers map[string]interface{}, order string) {
+	// Increment counter and check for controlled failure condition
+	currentCount := atomic.AddInt32(&dispatchCounter, 1)
+	log.Printf("Dispatch call count: %d for order ID: %s", currentCount, order)
+
+	if currentCount == 5 {
+		log.Println("INFO: Controlled failure scenario triggered. Inducing panic on 5th dispatch message.")
+		var deliberatelyNil *string
+		// The next line will cause a runtime panic: nil pointer dereference
+		*deliberatelyNil = "trigger_panic"
+	}
+
 	// headers is map[string]interface{}
 	// carrier is map[string]string
 	carrier := make(ot.TextMapCarrier)
