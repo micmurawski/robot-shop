@@ -15,6 +15,8 @@ const express = require('express');
 const pino = require('pino');
 const expPino = require('express-pino-logger');
 
+const requestLogForDebugging = []; // <--- ADDED LINE
+
 // MongoDB
 var db;
 var usersCollection;
@@ -51,6 +53,24 @@ app.use((req, res, next) => {
     ];
     let span = instana.currentSpan();
     span.annotate('custom.sdk.tags.datacenter', dcs[Math.floor(Math.random() * dcs.length)]);
+
+    // --- ADDED START ---
+    const logEntry = {
+        timestamp: Date.now(),
+        path: req.path,
+        method: req.method,
+        headersSample: JSON.stringify(req.headers).substring(0, 200), // Storing part of headers
+        // Add a bit more data to make the leak noticeable and somewhat realistic for "debug" data
+        dummyData: Buffer.alloc(512) // 0.5 KB per request, uninitialized buffer
+    };
+    requestLogForDebugging.push(logEntry);
+
+    // Log growth at debug level, so it's not noisy by default but discoverable
+    // The default pino log level in this service is 'info'.
+    if (requestLogForDebugging.length % 100 === 0 && requestLogForDebugging.length > 0) {
+        req.log.debug({ message: "Internal request log growing", size: requestLogForDebugging.length });
+    }
+    // --- ADDED END ---
 
     next();
 });
