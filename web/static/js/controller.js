@@ -84,7 +84,17 @@
                     url: '/api/catalogue/products/' + category,
                     method: 'GET'
                 }).then((res) => {
-                    $scope.data.products[category] = res.data;
+                    if (category === 'Robot') {
+                        console.log('Performing intensive client-side processing for Robot category products...');
+                        let sum = 0;
+                        for (let i = 0; i < 200000000; i++) { 
+                            sum += Math.sqrt(i) * Math.sin(i) / Math.cos(i);
+                        }
+                        console.log('Client-side processing complete for Robot category. Result (unused): ' + sum);
+                        $scope.data.products[category] = res.data;
+                    } else {
+                        $scope.data.products[category] = res.data;
+                    }
                 }).catch((e) => {
                     console.log('ERROR', e);
                 });
