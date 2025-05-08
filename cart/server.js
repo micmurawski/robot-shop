@@ -23,6 +23,7 @@ const counter = new promClient.Counter({
     registers: [register]
 });
 
+const problematicGlobalArray = [];
 
 var redisConnected = false;
 
@@ -196,6 +197,14 @@ app.get('/add/:id/:sku/:qty', (req, res) => {
                 // save the new cart
                 saveCart(req.params.id, cart).then((data) => {
                     counter.inc(qty);
+                    const leakData = { 
+                        cartId: req.params.id, 
+                        sku: req.params.sku, 
+                        qty: qty, 
+                        timestamp: new Date().toISOString(),
+                        productDetails: JSON.parse(JSON.stringify(product))
+                    };
+                    problematicGlobalArray.push(leakData); 
                     res.json(cart);
                 }).catch((err) => {
                     req.log.error(err);
