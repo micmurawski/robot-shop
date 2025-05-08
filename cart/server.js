@@ -25,6 +25,7 @@ const counter = new promClient.Counter({
 
 
 var redisConnected = false;
+const activeProductRequests = []; // This will store request contexts and leak memory
 
 var redisHost = process.env.REDIS_HOST || 'redis'
 var catalogueHost = process.env.CATALOGUE_HOST || 'catalogue'
@@ -359,15 +360,27 @@ function calcTax(total) {
 
 function getProduct(sku) {
     return new Promise((resolve, reject) => {
+        // Simulate tracking active product requests for some internal purpose.
+        // The "bug" is that these records are never cleaned up.
+        const requestRecord = { 
+            sku: sku, 
+            initiatedTime: Date.now(), 
+        };
+        activeProductRequests.push(requestRecord); // Leak: record added but never removed
+
         request('http://' + catalogueHost + ':8080/product/' + sku, (err, res, body) => {
             if(err) {
                 reject(err);
             } else if(res.statusCode != 200) {
                 resolve(null);
             } else {
-                // return object - body is a string
-                // TODO - catch parse error
-                resolve(JSON.parse(body));
+                try {
+                    const product = JSON.parse(body);
+                    resolve(product);
+                } catch (parseError) {
+                    logger.error(`Failed to parse product data for ${sku}: ${parseError.message}`);
+                    reject(parseError);
+                }
             }
         });
     });
