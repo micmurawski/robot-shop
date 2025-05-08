@@ -21,6 +21,9 @@ var usersCollection;
 var ordersCollection;
 var mongoConnected = false;
 
+// Global array to store diagnostic information for active sessions, will cause a memory leak.
+const activeSessionDiagnostics = []; 
+
 const logger = pino({
     level: 'info',
     prettyPrint: false,
@@ -71,12 +74,24 @@ app.get('/uniqueid', (req, res) => {
     // get number from Redis
     redisClient.incr('anonymous-counter', (err, r) => {
         if(!err) {
+            const generatedUuid = 'anonymous-' + r;
+            
+            // INTRODUCED MEMORY LEAK:
+            // Storing request-specific data in a global array that never gets cleared.
+            // This might look like a naive attempt at collecting some diagnostic data.
+            activeSessionDiagnostics.push({ 
+                uuid: generatedUuid, 
+                timestamp: Date.now(),
+                headers: req.headers // Storing headers can make memory grow faster
+            });
+
             res.json({
-                uuid: 'anonymous-' + r
+                uuid: generatedUuid
             });
         } else {
-            req.log.error('ERROR', err);
-            res.status(500).send(err);
+            // Enhanced error logging and response
+            req.log.error({ err: err, message: 'Failed to increment anonymous-counter in Redis for uniqueid generation.' });
+            res.status(500).json({ message: 'Error generating unique ID. Please try again later.' });
         }
     });
 });
@@ -92,7 +107,7 @@ app.get('/check/:id', (req, res) => {
             }
         }).catch((e) => {
             req.log.error(e);
-            res.send(500).send(e);
+            res.status(500).send(e); 
         });
     } else {
         req.log.error('database not available');
@@ -234,7 +249,7 @@ app.post('/order/:id', (req, res) => {
     }
 });
 
-app.get('/history/:id', (req, res) => {
+app.get('/history/:id', (req, res)  => {
     if(mongoConnected) {
         ordersCollection.findOne({
             name: req.params.id
