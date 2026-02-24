@@ -6,6 +6,7 @@ export TAG=${TAG:-"2.2.0"}
 
 echo "Deploying all resources"
 envsubst < robot-shop.yaml | kubectl delete -f -
+envsubst < load.yaml | kubectl delete -f -
 
 #Wait for services to be ready
 #echo "Waiting for services to be ready..."

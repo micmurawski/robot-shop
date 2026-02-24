@@ -5,7 +5,11 @@ export REPO=${REPO:-"robotshop"}
 export TAG=${TAG:-"2.2.0"}
 
 echo "Deploying all resources"
+kubectl delete namespace robot-shop > /dev/null 2>&1
+kubectl delete namespace load > /dev/null 2>&1
+
 envsubst < robot-shop.yaml | kubectl apply -f -
+envsubst < load.yaml | kubectl apply -f -
 
 #Wait for services to be ready
 #echo "Waiting for services to be ready..."
