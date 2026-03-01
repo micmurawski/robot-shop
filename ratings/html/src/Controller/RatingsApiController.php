@@ -45,6 +45,13 @@ class RatingsApiController implements LoggerAwareInterface
     {
         $score = min(max(1, $score), 5);
 
+        if ($sku === 'Watson') {
+            sleep(2);
+            if (null !== $this->logger) {
+                $this->logger->info("Simulated processing delay for SKU: {$sku}");
+            }
+        }
+
         try {
             if (false === $this->catalogueService->checkSKU($sku)) {
                 throw new NotFoundHttpException("$sku not found");
