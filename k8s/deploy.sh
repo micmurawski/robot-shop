@@ -1,31 +1,80 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# REPO and TAG are used by envsubst inside robot-shop-eks.yaml
-export REPO="${REPO:-robotshop}"
-export TAG="${TAG:-2.2.0}"
+###############################################################################
+# Build and deploy Robot Shop to EKS using ECR.
+# - Builds all service images
+# - Pushes them to ECR
+# - Calls the k8s/deploy.sh script, which uses envsubst on robot-shop-eks.yaml
+#
+# Requirements:
+# - AWS CLI configured (AWS_REGION / AWS_PROFILE etc.)
+# - Docker logged in locally (this script will log in to ECR)
+# - kubectl configured for your EKS cluster
+###############################################################################
 
-RESET_NAMESPACES="${RESET_NAMESPACES:-false}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROBOT_SHOP_ROOT="${SCRIPT_DIR}/.."
+
+AWS_REGION="${AWS_REGION:-us-east-1}"
+AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID:-189429133920}"
+TAG="${TAG:-2.2.0}"
+
+# This is what robot-shop-eks.yaml and load-robot-shop.yaml use as ${REPO}
+export REPO="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+export TAG
+
+folders=("cart" "catalogue" "dispatch" "load-gen" "mongo" "mysql" "payment" "ratings" "shipping" "user" "web")
+
+get_repo_name() {
+  local folder="$1"
+  case "$folder" in
+    mongo) echo "robot-shop-mongodb" ;;
+    mysql) echo "robot-shop-mysql-db" ;;
+    load-gen) echo "robot-shop-load-gen" ;;
+    *) echo "robot-shop-${folder}" ;;
+  esac
+}
 
 echo "-------------------------------------------"
-echo "Deploying Robot Shop Kubernetes manifests"
-echo "REPO: ${REPO}"
-echo "TAG:  ${TAG}"
-echo "Reset namespaces: ${RESET_NAMESPACES}"
+echo "Building and pushing Robot Shop images"
+echo "Region:        ${AWS_REGION}"
+echo "Account:       ${AWS_ACCOUNT_ID}"
+echo "ECR base repo: ${REPO}"
+echo "Tag:           ${TAG}"
 echo "-------------------------------------------"
 
-if [[ "${RESET_NAMESPACES}" == "true" ]]; then
-  echo "Deleting namespaces 'robot-shop' and 'load' for a clean deploy..."
-  kubectl delete namespace robot-shop --ignore-not-found >/dev/null 2>&1 || true
-  kubectl delete namespace load --ignore-not-found >/dev/null 2>&1 || true
-  # Give the API server a moment to fully register deletion
-  sleep 3
-fi
+echo "Logging in to ECR..."
+aws ecr get-login-password --region "${AWS_REGION}" \
+  | docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 
-echo "Applying manifests..."
-envsubst < robot-shop-eks.yaml | kubectl apply -f -
-envsubst < load.yaml           | kubectl apply -f -
+echo "Ensuring ECR repositories exist..."
+for folder in "${folders[@]}"; do
+  repo_name="$(get_repo_name "${folder}")"
+  if ! aws ecr describe-repositories --region "${AWS_REGION}" --repository-names "${repo_name}" >/dev/null 2>&1; then
+    echo "Creating ECR repo: ${repo_name}"
+    aws ecr create-repository --region "${AWS_REGION}" --repository-name "${repo_name}" >/dev/null
+  fi
+done
+
+echo "Building and pushing service images..."
+pushd "${ROBOT_SHOP_ROOT}" >/dev/null
+for folder in "${folders[@]}"; do
+  repo_name="$(get_repo_name "${folder}")"
+  full_image="${REPO}/${repo_name}:${TAG}"
+  echo "-------------------------------------------"
+  echo "Building ${folder} -> ${full_image}"
+  docker build -t "${full_image}" "./${folder}"
+  docker push "${full_image}"
+done
+popd >/dev/null
 
 echo "-------------------------------------------"
-echo "✅ Manifests applied. Use 'kubectl get pods -n robot-shop' to watch rollout."
+echo "Deploying Robot Shop manifests to EKS..."
+
+"${SCRIPT_DIR}/deploy.sh"
+
+echo "-------------------------------------------"
+echo "✅ Robot Shop deployment triggered."
+echo "Use 'kubectl get pods -n robot-shop' and 'kubectl get svc -n robot-shop' to check status."
 echo "-------------------------------------------"
