@@ -1,20 +1,31 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Set environment variables
-export REPO=${REPO:-"robotshop"}
-export TAG=${TAG:-"2.2.0"}
+# REPO and TAG are used by envsubst inside robot-shop-eks.yaml
+export REPO="${REPO:-robotshop}"
+export TAG="${TAG:-2.2.0}"
 
-echo "Deploying all resources"
-kubectl delete namespace robot-shop > /dev/null 2>&1
-kubectl delete namespace load > /dev/null 2>&1
+RESET_NAMESPACES="${RESET_NAMESPACES:-false}"
 
-envsubst < robot-shop.yaml | kubectl apply -f -
-envsubst < load.yaml | kubectl apply -f -
+echo "-------------------------------------------"
+echo "Deploying Robot Shop Kubernetes manifests"
+echo "REPO: ${REPO}"
+echo "TAG:  ${TAG}"
+echo "Reset namespaces: ${RESET_NAMESPACES}"
+echo "-------------------------------------------"
 
-#Wait for services to be ready
-#echo "Waiting for services to be ready..."
-#kubectl wait --for=condition=available --timeout=100s deployment/web -n robot-shop
+if [[ "${RESET_NAMESPACES}" == "true" ]]; then
+  echo "Deleting namespaces 'robot-shop' and 'load' for a clean deploy..."
+  kubectl delete namespace robot-shop --ignore-not-found >/dev/null 2>&1 || true
+  kubectl delete namespace load --ignore-not-found >/dev/null 2>&1 || true
+  # Give the API server a moment to fully register deletion
+  sleep 3
+fi
 
-# Get the external IP or hostname
-#echo "Robot Shop is being deployed. You can access it at:"
-#kubectl get ingress robot-shop-ingress -n robot-shop -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 
+echo "Applying manifests..."
+envsubst < robot-shop-eks.yaml | kubectl apply -f -
+envsubst < load.yaml           | kubectl apply -f -
+
+echo "-------------------------------------------"
+echo "✅ Manifests applied. Use 'kubectl get pods -n robot-shop' to watch rollout."
+echo "-------------------------------------------"
