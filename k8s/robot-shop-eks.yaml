@@ -142,8 +142,6 @@ spec:
     metadata:
       labels:
         app: mongodb
-      annotations:
-        linkerd.io/inject: enabled
     spec:
       containers:
       - name: mongodb
@@ -192,8 +190,6 @@ spec:
     metadata:
       labels:
         app: redis
-      annotations:
-        linkerd.io/inject: enabled
     spec:
       containers:
       - name: redis
@@ -242,8 +238,6 @@ spec:
     metadata:
       labels:
         app: rabbitmq
-      annotations:
-        linkerd.io/inject: enabled
     spec:
       containers:
       - name: rabbitmq
@@ -299,8 +293,6 @@ spec:
     metadata:
       labels:
         app: web
-      annotations:
-        linkerd.io/inject: enabled
     spec:
       containers:
       - name: web
@@ -375,8 +367,6 @@ spec:
     metadata:
       labels:
         app: catalogue
-      annotations:
-        linkerd.io/inject: enabled
     spec:
       containers:
       - name: catalogue
@@ -439,8 +429,6 @@ spec:
     metadata:
       labels:
         app: user
-      annotations:
-        linkerd.io/inject: enabled
     spec:
       containers:
       - name: user
@@ -505,8 +493,6 @@ spec:
     metadata:
       labels:
         app: cart
-      annotations:
-        linkerd.io/inject: enabled
     spec:
       containers:
       - name: cart
@@ -566,8 +552,6 @@ spec:
     metadata:
       labels:
         app: mysql
-      annotations:
-        linkerd.io/inject: enabled
     spec:
       containers:
       - name: mysql
@@ -619,8 +603,6 @@ spec:
     metadata:
       labels:
         app: shipping
-      annotations:
-        linkerd.io/inject: enabled
     spec:
       containers:
       - name: shipping
@@ -683,8 +665,6 @@ spec:
     metadata:
       labels:
         app: ratings
-      annotations:
-        linkerd.io/inject: enabled
     spec:
       containers:
       - name: ratings
@@ -747,8 +727,6 @@ spec:
     metadata:
       labels:
         app: payment
-      annotations:
-        linkerd.io/inject: enabled
     spec:
       containers:
       - name: payment
@@ -811,8 +789,6 @@ spec:
     metadata:
       labels:
         app: dispatch
-      annotations:
-        linkerd.io/inject: enabled
     spec:
       containers:
       - name: dispatch
