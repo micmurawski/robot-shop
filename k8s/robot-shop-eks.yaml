@@ -23,7 +23,7 @@ metadata:
   namespace: application
 spec:
   capacity:
-    storage: 10Gi
+    storage: 5Gi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
@@ -41,7 +41,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: 5Gi
   storageClassName: standard
 ---
 apiVersion: v1
@@ -51,7 +51,7 @@ metadata:
   namespace: application
 spec:
   capacity:
-    storage: 5Gi
+    storage: 3Gi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
@@ -69,7 +69,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi
+      storage: 3Gi
   storageClassName: standard
 ---
 apiVersion: v1
@@ -79,7 +79,7 @@ metadata:
   namespace: application
 spec:
   capacity:
-    storage: 20Gi
+    storage: 5Gi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
@@ -97,7 +97,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 20Gi
+      storage: 5Gi
   storageClassName: standard
 ---
 apiVersion: v1
@@ -107,7 +107,7 @@ metadata:
   namespace: application
 spec:
   capacity:
-    storage: 5Gi
+    storage: 3Gi
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
@@ -125,7 +125,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi
+      storage: 3Gi
   storageClassName: standard
 ---
 apiVersion: apps/v1
@@ -145,7 +145,7 @@ spec:
     spec:
       containers:
       - name: mongodb
-        image: ${REPO}/robot-shop-mongodb:${TAG}
+        image: ${REPO}/robot-shop-mongo:${TAG}
         ports:
         - containerPort: 27017
         resources:
@@ -285,7 +285,7 @@ metadata:
   name: web
   namespace: application
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: web
@@ -555,7 +555,7 @@ spec:
     spec:
       containers:
       - name: mysql
-        image: ${REPO}/robot-shop-mysql-db:${TAG}
+        image: ${REPO}/robot-shop-mysql:${TAG}
         ports:
         - containerPort: 3306
         resources:
@@ -614,8 +614,8 @@ spec:
           value: mysql
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "100m"
+            memory: "512Mi"
+            cpu: "300m"
           limits:
             memory: "512Mi"
             cpu: "500m"
@@ -676,10 +676,10 @@ spec:
           value: "prod"
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "100m"
-          limits:
             memory: "512Mi"
+            cpu: "300m"
+          limits:
+            memory: "768Mi"
             cpu: "500m"
         livenessProbe:
           httpGet:

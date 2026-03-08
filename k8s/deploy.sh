@@ -18,7 +18,7 @@ ROBOT_SHOP_ROOT="${SCRIPT_DIR}/.."
 
 AWS_REGION="${AWS_REGION:-us-east-1}"
 AWS_ACCOUNT_ID="${AWS_ACCOUNT_ID:-189429133920}"
-TAG="${TAG:-2.2.0}"
+TAG="${TAG:-latest}"
 
 # This is what robot-shop-eks.yaml and load-robot-shop.yaml use as ${REPO}
 export REPO="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
@@ -29,8 +29,6 @@ folders=("cart" "catalogue" "dispatch" "load-gen" "mongo" "mysql" "payment" "rat
 get_repo_name() {
   local folder="$1"
   case "$folder" in
-    mongo) echo "robot-shop-mongodb" ;;
-    mysql) echo "robot-shop-mysql-db" ;;
     load-gen) echo "robot-shop-load-gen" ;;
     *) echo "robot-shop-${folder}" ;;
   esac
@@ -68,13 +66,3 @@ for folder in "${folders[@]}"; do
   docker push "${full_image}"
 done
 popd >/dev/null
-
-echo "-------------------------------------------"
-echo "Deploying Robot Shop manifests to EKS..."
-
-"${SCRIPT_DIR}/deploy.sh"
-
-echo "-------------------------------------------"
-echo "✅ Robot Shop deployment triggered."
-echo "Use 'kubectl get pods -n robot-shop' and 'kubectl get svc -n robot-shop' to check status."
-echo "-------------------------------------------"
