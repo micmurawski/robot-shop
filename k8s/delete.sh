@@ -1,17 +1,12 @@
 #!/bin/bash
 
 # Set environment variables
-export REPO=${REPO:-"robotshop"}
-export TAG=${TAG:-"2.2.0"}
-
-echo "Deploying all resources"
-envsubst < robot-shop.yaml | kubectl delete -f -
-envsubst < load.yaml | kubectl delete -f -
-
-#Wait for services to be ready
-#echo "Waiting for services to be ready..."
-#kubectl wait --for=condition=available --timeout=100s deployment/web -n robot-shop
-
-# Get the external IP or hostname
-#echo "Robot Shop is being deployed. You can access it at:"
-#kubectl get ingress robot-shop-ingress -n robot-shop -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 
+export REPO=${REPO:-189429133920.dkr.ecr.us-east-1.amazonaws.com}
+export TAG=${TAG:-latest}
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+echo "Deleting all resources"
+services=("cart" "catalogue" "dispatch" "mongodb" "mysql" "payment" "ratings" "redis" "shipping" "user" "web")
+for service in "${services[@]}"; do
+  envsubst < "${SCRIPT_DIR}/files/${service}.yaml" | kubectl delete -f -
+done
+echo "All resources deleted"
