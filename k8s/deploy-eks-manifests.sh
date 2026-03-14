@@ -13,7 +13,7 @@ echo "REPO: ${REPO}"
 echo "TAG:  ${TAG}"
 echo "-------------------------------------------"
 
-services=("cart" "catalogue" "dispatch" "mongodb" "mysql" "payment" "ratings" "redis" "shipping" "user" "web")
+services=("cart" "catalogue" "dispatch" "mongodb" "mysql" "payment" "rabbitmq" "ratings" "redis" "shipping" "user" "web")
 for service in "${services[@]}"; do
   envsubst < "${SCRIPT_DIR}/manifests/${service}.yaml" | kubectl apply -f -
 done

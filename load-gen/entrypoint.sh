@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# set -x
+set -x
 
 if [ -z "$HOST" ]
 then
@@ -35,7 +35,7 @@ else
     unset TIME
 fi
 
-echo "Starting $CLIENTS clients for ${RUN_TIME:-ever}"
+echo "Starting $NUM_CLIENTS clients for ${RUN_TIME:-ever}"
 if [ "$SILENT" -eq 1 ]
 then
     locust -f robot-shop.py --host "$HOST" --headless -r 1 -u $NUM_CLIENTS $TIME > /dev/null 2>&1
