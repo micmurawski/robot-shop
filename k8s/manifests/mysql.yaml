@@ -25,6 +25,12 @@ spec:
             add: ["NET_ADMIN"]
         ports:
         - containerPort: 3306
+        readinessProbe:
+          tcpSocket:
+            port: 3306
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          failureThreshold: 10
         resources:
           limits:
             cpu: 200m

@@ -22,6 +22,12 @@ spec:
         imagePullPolicy: Always
         ports:
         - containerPort: 6379
+        readinessProbe:
+          tcpSocket:
+            port: 6379
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          failureThreshold: 10
         volumeMounts:
           - name: data
             mountPath: /mnt/redis
