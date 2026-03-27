@@ -5,6 +5,7 @@ metadata:
   namespace: application
   labels:
     service: shipping
+    app: shipping
 spec:
   replicas: 1
   selector:
@@ -14,6 +15,7 @@ spec:
     metadata:
       labels:
         service: shipping
+        app: shipping
     spec:
       containers:
       - name: shipping
@@ -46,6 +48,7 @@ metadata:
   namespace: application
   labels:
     service: shipping
+    app: shipping
 spec:
   ports:
   - name: http
@@ -53,3 +56,4 @@ spec:
     targetPort: 8080
   selector:
     service: shipping
+    app: shipping

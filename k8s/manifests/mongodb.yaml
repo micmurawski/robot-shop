@@ -5,6 +5,7 @@ metadata:
   namespace: application
   labels:
     service: mongodb
+    app: mongodb
 spec:
   replicas: 1
   selector:
@@ -14,6 +15,7 @@ spec:
     metadata:
       labels:
         service: mongodb
+        app: mongodb
     spec:
       containers:
       - name: mongodb
@@ -41,6 +43,7 @@ kind: Service
 metadata:
   labels:
     service: mongodb
+    app: mongodb
   name: mongodb
   namespace: application
 spec:
@@ -50,4 +53,5 @@ spec:
     targetPort: 27017
   selector:
     service: mongodb
+    app: mongodb
 

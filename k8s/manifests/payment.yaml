@@ -5,6 +5,7 @@ metadata:
   namespace: application
   labels:
     service: payment
+    app: payment
     stage: prod
 spec:
   replicas: 1
@@ -16,6 +17,7 @@ spec:
     metadata:
       labels:
         service: payment
+        app: payment
         stage: prod
     spec:
       containers:
@@ -55,6 +57,7 @@ metadata:
   namespace: application
   labels:
     service: payment
+    app: payment
 spec:
   ports:
   - name: http
@@ -62,4 +65,5 @@ spec:
     targetPort: 8080
   selector:
     service: payment
+    app: payment
 

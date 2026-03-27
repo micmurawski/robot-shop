@@ -5,6 +5,7 @@ metadata:
   namespace: application
   labels:
     service: web
+    app: web
 spec:
   replicas: 1
   selector:
@@ -14,6 +15,7 @@ spec:
     metadata:
       labels:
         service: web
+        app: web
     spec:
       containers:
       - name: web
@@ -45,6 +47,7 @@ metadata:
 spec:
   selector:
     service: web
+    app: web
   ports:
   - port: 8080
     targetPort: 8080

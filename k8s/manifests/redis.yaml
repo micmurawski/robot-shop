@@ -3,6 +3,7 @@ kind: StatefulSet
 metadata:
   labels:
     service: redis
+    app: redis
   name: redis
   namespace: application
 spec:
@@ -15,6 +16,7 @@ spec:
     metadata:
       labels:
         service: redis
+        app: redis
     spec:
       containers:
       - name: redis
@@ -56,6 +58,7 @@ kind: Service
 metadata:
   labels:
     service: redis
+    app: redis
   name: redis
   namespace: application
 spec:
@@ -65,5 +68,6 @@ spec:
     targetPort: 6379
   selector:
     service: redis
+    app: redis
 
 

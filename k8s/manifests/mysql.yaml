@@ -5,6 +5,7 @@ metadata:
   namespace: application
   labels:
     service: mysql
+    app: mysql
 spec:
   replicas: 1
   selector:
@@ -14,6 +15,7 @@ spec:
     metadata:
       labels:
         service: mysql
+        app: mysql
     spec:
       containers:
       - name: mysql
@@ -46,6 +48,7 @@ kind: Service
 metadata:
   labels:
     service: mysql
+    app: mysql
   name: mysql
   namespace: application
 spec:
@@ -55,4 +58,5 @@ spec:
     targetPort: 3306
   selector:
     service: mysql
+    app: mysql
 

@@ -5,6 +5,7 @@ metadata:
   namespace: application
   labels:
     service: dispatch
+    app: dispatch
 spec:
   replicas: 1
   selector:
@@ -14,6 +15,7 @@ spec:
     metadata:
       labels:
         service: dispatch
+        app: dispatch
     spec:
       containers:
       - name: dispatch
@@ -45,6 +47,7 @@ metadata:
   namespace: application
   labels:
     service: dispatch
+    app: dispatch
 spec:
   clusterIP: None
   ports:
@@ -53,4 +56,5 @@ spec:
     targetPort: 0
   selector:
     service: dispatch
+    app: dispatch
 

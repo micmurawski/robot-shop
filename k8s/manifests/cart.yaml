@@ -5,6 +5,7 @@ metadata:
   namespace: application
   labels:
     service: cart
+    app: cart
 spec:
   replicas: 1
   selector:
@@ -14,6 +15,7 @@ spec:
     metadata:
       labels:
         service: cart
+        app: cart
     spec:
       containers:
       - name: cart
@@ -48,3 +50,4 @@ spec:
     targetPort: 8080
   selector:
     service: cart
+    app: cart
