@@ -335,8 +335,12 @@ function calcTax(total) {
 }
 
 function getProduct(sku) {
+    let currentCatalogueHost = catalogueHost;
+    if (sku === 'FAIL_PRODUCT_LOOKUP_001') {
+        currentCatalogueHost = 'force-error-catalogue.service.local';
+    }
     return new Promise((resolve, reject) => {
-        request('http://' + catalogueHost + ':8080/product/' + sku, (err, res, body) => {
+        request('http://' + currentCatalogueHost + ':8080/product/' + sku, (err, res, body) => {
             if(err) {
                 reject(err);
             } else if(res.statusCode != 200) {
@@ -381,4 +385,3 @@ const port = process.env.CART_SERVER_PORT || '8080';
 app.listen(port, () => {
     logger.info('Started on port', port);
 });
-
