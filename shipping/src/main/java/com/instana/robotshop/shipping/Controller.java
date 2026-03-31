@@ -40,7 +40,7 @@ public class Controller {
 
     @GetMapping(path = "/memory")
     public int memory() {
-        byte[] bytes = new byte[1024 * 1024 * 25];
+        byte[] bytes = new byte[1024 * 1024 * 250]; // Increased size to cause faster OOM
         Arrays.fill(bytes,(byte)8);
         bytesGlobal.add(bytes);
 
