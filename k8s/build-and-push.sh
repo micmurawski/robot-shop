@@ -26,6 +26,29 @@ export TAG
 
 folders=("cart" "catalogue" "dispatch" "load-gen" "mongo" "mysql" "payment" "ratings" "shipping" "user" "web")
 
+# Docker has no built-in push retries; ECR blob uploads can fail transiently.
+# DOCKER_PUSH_RETRIES: extra attempts after the first failure (default 3 → 4 tries total).
+DOCKER_PUSH_RETRIES="${DOCKER_PUSH_RETRIES:-3}"
+RETRY_DELAY_SECONDS="${RETRY_DELAY_SECONDS:-5}"
+
+run_with_retry() {
+  local max_attempts=$((1 + DOCKER_PUSH_RETRIES))
+  local attempt=1
+  local delay="${RETRY_DELAY_SECONDS}"
+  while (( attempt <= max_attempts )); do
+    if "$@"; then
+      return 0
+    fi
+    if (( attempt == max_attempts )); then
+      echo "Command failed after ${max_attempts} attempt(s): $*" >&2
+      return 1
+    fi
+    echo "Attempt ${attempt} failed; retrying in ${delay}s ($((attempt + 1))/${max_attempts})..."
+    sleep "${delay}"
+    ((attempt++))
+  done
+}
+
 get_repo_name() {
   local folder="$1"
   case "$folder" in
@@ -63,6 +86,6 @@ for folder in "${folders[@]}"; do
   echo "-------------------------------------------"
   echo "Building ${folder} -> ${full_image}"
   docker build -t "${full_image}" "./${folder}"
-  docker push "${full_image}"
+  run_with_retry docker push "${full_image}"
 done
 popd >/dev/null
