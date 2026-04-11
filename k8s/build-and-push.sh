@@ -85,7 +85,7 @@ for folder in "${folders[@]}"; do
   full_image="${REPO}/${repo_name}:${TAG}"
   echo "-------------------------------------------"
   echo "Building ${folder} -> ${full_image}"
-  docker build -t "${full_image}" "./${folder}"
+  run_with_retry docker build -t "${full_image}" "./${folder}"
   run_with_retry docker push "${full_image}"
 done
 popd >/dev/null
