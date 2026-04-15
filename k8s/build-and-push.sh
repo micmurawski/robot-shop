@@ -57,12 +57,22 @@ get_repo_name() {
   esac
 }
 
+get_latest_digest() {
+  local repo_name="$1"
+  aws ecr describe-images \
+    --region "${AWS_REGION}" \
+    --repository-name "${repo_name}" \
+    --query 'sort_by(imageDetails,&imagePushedAt)[-1].imageDigest' \
+    --output text
+}
+
 echo "-------------------------------------------"
 echo "Building and pushing Robot Shop images"
 echo "Region:        ${AWS_REGION}"
 echo "Account:       ${AWS_ACCOUNT_ID}"
 echo "ECR base repo: ${REPO}"
 echo "Tag:           ${TAG}"
+echo "Deploy mode:   digest-pinned images (resolved during apply)"
 echo "-------------------------------------------"
 
 echo "Logging in to ECR..."
@@ -87,5 +97,7 @@ for folder in "${folders[@]}"; do
   echo "Building ${folder} -> ${full_image}"
   run_with_retry docker build -t "${full_image}" "./${folder}"
   run_with_retry docker push "${full_image}"
+  latest_digest="$(get_latest_digest "${repo_name}")"
+  echo "Latest digest for ${repo_name}: ${latest_digest}"
 done
 popd >/dev/null
