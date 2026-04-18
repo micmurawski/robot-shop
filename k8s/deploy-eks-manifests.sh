@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export REPO="${REPO:-189429133920.dkr.ecr.us-east-1.amazonaws.com}"
 export TAG="${TAG:-latest}"
 AWS_REGION="${AWS_REGION:-us-east-1}"
-
+NAMESPACE="${NAMESPACE:-application}"
 get_repo_name_for_service() {
   local service="$1"
   case "${service}" in
@@ -61,6 +61,9 @@ for service in "${services[@]}"; do
   printf '%s\n' "${rendered_manifest}" | kubectl apply -f -
 done
 
+kubectl apply -f ${SCRIPT_DIR}/manifests/serviceprofiles/ -n ${NAMESPACE}
+
 echo "-------------------------------------------"
 echo "✅ Manifests applied. Use 'kubectl get pods -n application' to watch rollout."
 echo "-------------------------------------------"
+
