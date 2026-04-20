@@ -61,7 +61,7 @@ class RatingsApiController implements LoggerAwareInterface
             } else {
                 // iffy maths
                 $newAvg = (($rating['avg_rating'] * $rating['rating_count']) + $score) / ($rating['rating_count'] + 1);
-                $this->ratingsService->updateRatingForSKU($sku, $newAvg, $rating['rating_count'] + 1);
+                $this->ratingsService->updateRatingForSKU($sku, $newAvg, $rating['rating_count']);
             }
 
             return new JsonResponse([
