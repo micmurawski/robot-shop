@@ -117,6 +117,12 @@ public class Controller {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "city not found");
         }
 
+        // Introduce resource consumption based on id
+        List<String> temp_list = new ArrayList<>();
+        for (int i = 0; i < id * 1000; i++) { // Loop count depends on id
+            temp_list.add("This is a test string to consume memory " + i);
+        }
+
         Calculator calc = new Calculator(city);
         long distance = calc.getDistance(homeLatitude, homeLongitude);
         // avoid rounding
