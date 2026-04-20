@@ -34,6 +34,7 @@ var (
 		"us-east1",
 		"us-west1",
 	}
+	processedOrderCache = make(map[string]time.Time)
 )
 
 func connectToRabbitMQ(uri string) *amqp.Connection {
@@ -98,6 +99,8 @@ func getOrderId(order []byte) string {
 	if err == nil {
 		m := f.(map[string]interface{})
 		id = m["orderid"].(string)
+		// Simulate caching the order ID with a timestamp, leading to a leak
+		processedOrderCache[id] = time.Now()
 	}
 
 	return id
