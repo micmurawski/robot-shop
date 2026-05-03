@@ -6,6 +6,36 @@
 
 
 BASE_DIR=/usr/share/nginx/html
+NGINX_CONF=/etc/nginx/nginx.conf
+DEFAULT_CONF=/etc/nginx/conf.d/default.conf
+
+dedupe_nginx_events_block() {
+    # Keep only the first events{} block in the main nginx config.
+    # If another process/image layer injected a duplicate block, nginx fails hard.
+    awk '
+    BEGIN { in_dup=0; depth=0; seen_events=0 }
+    {
+        if (!in_dup && $0 ~ /^[[:space:]]*events[[:space:]]*\{[[:space:]]*$/) {
+            seen_events++
+            if (seen_events > 1) {
+                in_dup=1
+                depth=1
+                next
+            }
+        }
+        if (in_dup) {
+            open_count = gsub(/\{/, "{")
+            close_count = gsub(/\}/, "}")
+            depth += (open_count - close_count)
+            if (depth <= 0) {
+                in_dup=0
+            }
+            next
+        }
+        print
+    }' "$NGINX_CONF" > /tmp/nginx.conf
+    mv /tmp/nginx.conf "$NGINX_CONF"
+}
 
 if [ -n "$1" ]
 then
@@ -39,15 +69,17 @@ fi
 chmod 644 $BASE_DIR/eum.html
 
 # apply environment variables to default.conf
-envsubst '${CATALOGUE_HOST} ${USER_HOST} ${CART_HOST} ${SHIPPING_HOST} ${PAYMENT_HOST} ${RATINGS_HOST}' < /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf
+envsubst '${CATALOGUE_HOST} ${USER_HOST} ${CART_HOST} ${SHIPPING_HOST} ${PAYMENT_HOST} ${RATINGS_HOST}' < /etc/nginx/conf.d/default.conf.template > "$DEFAULT_CONF"
 
 if [ -f /tmp/ngx_http_opentracing_module.so -a -f /tmp/libinstana_sensor.so ]
 then
     echo "Patching for Instana tracing"
     mv /tmp/ngx_http_opentracing_module.so /usr/lib/nginx/modules
     mv /tmp/libinstana_sensor.so /usr/local/lib
-    cat - /etc/nginx/nginx.conf << !EOF! > /tmp/nginx.conf
+    if ! grep -q "Instana tracing bootstrap" "$NGINX_CONF"; then
+    cat - "$NGINX_CONF" << !EOF! > /tmp/nginx.conf
 # Extra configuration for Instana tracing
+# Instana tracing bootstrap
 load_module modules/ngx_http_opentracing_module.so;
 
 # Pass through these env vars
@@ -58,12 +90,20 @@ env INSTANA_MAX_BUFFERED_SPANS;
 env INSTANA_DEV;
 !EOF!
 
-    mv /tmp/nginx.conf /etc/nginx/nginx.conf
+    mv /tmp/nginx.conf "$NGINX_CONF"
+    fi
     echo "{}" > /etc/instana-config.json
 else
     echo "Tracing not enabled"
     # remove tracing config
-    sed -i '1,3d' /etc/nginx/conf.d/default.conf
+    sed -i '1,3d' "$DEFAULT_CONF"
+fi
+
+dedupe_nginx_events_block
+
+if ! nginx -t; then
+    echo "nginx config test failed"
+    exit 1
 fi
 
 exec nginx-debug -g "daemon off;"

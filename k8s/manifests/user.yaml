@@ -21,12 +21,6 @@ spec:
       - name: user
         image: ${REPO}/robot-shop-user:${TAG}
         imagePullPolicy: Always
-        env:
-          # agent networking access
-          - name: INSTANA_AGENT_HOST
-            valueFrom:
-              fieldRef:
-                fieldPath: status.hostIP
         ports:
         - containerPort: 8080
         readinessProbe:

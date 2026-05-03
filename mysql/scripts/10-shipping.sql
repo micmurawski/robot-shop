@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS shipping (
 ) ENGINE=InnoDB;
 
 -- Create user and grant privileges using modern MySQL syntax
-CREATE USER IF NOT EXISTS 'shipping'@'%' IDENTIFIED BY 'iloveit';
+CREATE USER IF NOT EXISTS 'shipping'@'%' IDENTIFIED BY 'secret';
+ALTER USER 'shipping'@'%' IDENTIFIED BY 'secret';
 GRANT ALL PRIVILEGES ON shipping.* TO 'shipping'@'%';
-FLUSH PRIVILEGES; 
+FLUSH PRIVILEGES;
