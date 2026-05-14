@@ -21,6 +21,8 @@ var mongoConnected = false;
 
 const app = express();
 
+const detailedProductViewStats = [];
+
 app.use(expLogger);
 
 app.use((req, res, next) => {
@@ -64,6 +66,15 @@ app.get('/product/:sku', (req, res) => {
         collection.findOne({sku: req.params.sku}).then((product) => {
             req.log.info('product', product);
             if(product) {
+                detailedProductViewStats.push({
+                    sku: req.params.sku,
+                    timestamp: new Date().toISOString(),
+                    ip: req.ip,
+                    userAgent: req.headers['user-agent']
+                });
+                if (detailedProductViewStats.length % 100 === 0) {
+                    req.log.info(`detailedProductViewStats has ${detailedProductViewStats.length} entries.`);
+                }
                 res.json(product);
             } else {
                 res.status(404).send('SKU not found');
@@ -162,4 +173,3 @@ const port = process.env.CATALOGUE_SERVER_PORT || '8080';
 app.listen(port, () => {
     logger.info('Started on port', port);
 });
-
